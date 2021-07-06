@@ -46,6 +46,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
         // 添加自定义Filter
          http.addFilterAfter(weiboAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                  .authorizeRequests().antMatchers("/oauth2/weibo").permitAll().anyRequest().authenticated();
+                 // .and().authenticationProvider(new WeiboAuthenticationProvider());
     }
     
     
@@ -58,17 +59,19 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
         // 默认自定义认证方式grant_type为authorization_code方式，如果直接返回内容，则需自定义success和fail handler
         // filter.setAuthenticationSuccessHandler(new CustomAuthenticationSuccessHandler());
         filter.setAuthenticationFailureHandler(new WeiboAuthenticationFailureHandler());
-        
         filter.setAuthenticationManager(authenticationManager);
         return filter;
     }
     
     @Override
-    public void configure(AuthenticationManagerBuilder auth) {
+    public void configure(AuthenticationManagerBuilder auth) throws Exception {
         // 定义认证的provider用于实现用户名和密码认证
         // auth.authenticationProvider(new UsernamePasswordAuthenticationProvider(usernamePasswordUserDetailService));
         // 自定义provider用于实现自定义的登录认证, 如不需要其它形式认证如短信登录，可删除
         auth.authenticationProvider(new WeiboAuthenticationProvider());
+        auth.
+        // super.configure(auth);
+        // auth.authenticationProvider()
     }
     
     @Override

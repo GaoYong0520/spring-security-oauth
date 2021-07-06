@@ -20,7 +20,8 @@ public class WeiboAuthenticationFailureHandler implements AuthenticationFailureH
         // response.setContentType("application/json; charset=utf-8");
         // response.setContentType("text/html;charset=UTF-8");
         // 要重定向的新位置
-        String site = "https://api.weibo.com/oauth2/authorize?client_id=2284851312&redirect_uri=http://localhost/oauth2/weibo:";
+        exception.printStackTrace();
+        String site = "https://api.weibo.com/oauth2/authorize?scope=all&display=client&client_id=2284851312&redirect_uri=http://gaoyong.info:8555/oauth2/weibo";
         response.setHeader("Location", site);
     }
 }
