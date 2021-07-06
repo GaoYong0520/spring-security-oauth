@@ -1,0 +1,18 @@
+{
+  "properties": [
+    {
+      "name": "weibo.redirect.url",
+      "type": "java.lang.String",
+      "description": "Description for weibo.redirect.url."
+    },
+    {
+      "name": "weibo.appId",
+      "type": "java.lang.String",
+      "description": "Description for weibo.appId."
+    },
+    {
+      "name": "weibo.clientId",
+      "type": "java.lang.String",
+      "description": "Description for weibo.clientId."
+    }
+  ] }
