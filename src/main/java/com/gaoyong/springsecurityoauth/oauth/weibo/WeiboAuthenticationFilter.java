@@ -47,7 +47,7 @@ public class WeiboAuthenticationFilter extends AbstractAuthenticationProcessingF
         authorities.add(new SimpleGrantedAuthority("WeiboUser"));
     
         Object o = CLIENT.processCall(CLIENT.weiboApi.userShow(token.getAccess_token(), Long.valueOf(token.getUid()), null));
-        AbstractAuthenticationToken authRequest = new AbstractAuthenticationToken(authorities) {
+        AbstractAuthenticationToken authenticationToken = new AbstractAuthenticationToken(authorities) {
             @Override
             public Object getCredentials() {
                 return code;
@@ -58,8 +58,8 @@ public class WeiboAuthenticationFilter extends AbstractAuthenticationProcessingF
                 return o;
             }
         };
-        authRequest.setDetails(authenticationDetailsSource.buildDetails(request));
-        return this.getAuthenticationManager().authenticate(authRequest);
+        authenticationToken.setDetails(authenticationDetailsSource.buildDetails(request));
+        return this.getAuthenticationManager().authenticate(authenticationToken);
     }
     
     

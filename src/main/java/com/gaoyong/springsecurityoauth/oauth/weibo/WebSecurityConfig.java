@@ -5,12 +5,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.Collections;
 
 /**
  * @author 高勇01
@@ -26,6 +30,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
     
     @Autowired
     private AuthenticationManager authenticationManager;
+    
+    @Autowired
+    private WeiboAuthenticationProvider weiboAuthenticationProvider;
+    @Autowired
+    private AuthenticationSuccessHandler weiboAuthenticationSuccessHandler;
+    
+    
+    // @Autowired
+    // private AuthenticationManagerBuilder authenticationManagerBuilder;
     
     // @Autowired
     // private WeiboAuthenticationFilter weiboAuthenticationFilter;
@@ -44,8 +57,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
                 .csrf().disable();
     
         // 添加自定义Filter
-         http.addFilterAfter(weiboAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
-                 .authorizeRequests().antMatchers("/oauth2/weibo").permitAll().anyRequest().authenticated();
+         http.addFilterAt(weiboAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                 .authorizeRequests().antMatchers(oauthUrl).permitAll().anyRequest().authenticated();
                  // .and().authenticationProvider(new WeiboAuthenticationProvider());
     }
     
@@ -58,18 +71,19 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
         
         // 默认自定义认证方式grant_type为authorization_code方式，如果直接返回内容，则需自定义success和fail handler
         // filter.setAuthenticationSuccessHandler(new CustomAuthenticationSuccessHandler());
+        // ProviderManager providerManager = new ProviderManager(Collections.singletonList(weiboAuthenticationProvider));
         filter.setAuthenticationFailureHandler(new WeiboAuthenticationFailureHandler());
+        filter.setAuthenticationSuccessHandler(weiboAuthenticationSuccessHandler);
         filter.setAuthenticationManager(authenticationManager);
         return filter;
     }
     
     @Override
-    public void configure(AuthenticationManagerBuilder auth) throws Exception {
+    public void configure(AuthenticationManagerBuilder auth) {
         // 定义认证的provider用于实现用户名和密码认证
         // auth.authenticationProvider(new UsernamePasswordAuthenticationProvider(usernamePasswordUserDetailService));
         // 自定义provider用于实现自定义的登录认证, 如不需要其它形式认证如短信登录，可删除
         auth.authenticationProvider(new WeiboAuthenticationProvider());
-        auth.
         // super.configure(auth);
         // auth.authenticationProvider()
     }
@@ -79,4 +93,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
     }
+    
+    
 }
