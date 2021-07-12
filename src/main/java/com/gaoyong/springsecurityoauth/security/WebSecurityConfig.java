@@ -9,6 +9,7 @@ import com.gaoyong.springsecurityoauth.oauth.weibo.WeiboAuthenticationProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -36,6 +37,7 @@ import java.util.List;
 ////会拦截注解了@PreAuthrize注解的配置.
 @EnableGlobalMethodSecurity(prePostEnabled=true)
 @ImportResource(value = "classpath:applicationContext-CrowdRestClient.xml")
+// @ComponentScan("")
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
     @Value("${weibo.oauth2:/oauth2/weibo}")
     private String oauthUrl;
