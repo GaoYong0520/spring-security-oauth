@@ -1,27 +1,17 @@
 package com.gaoyong.springsecurityoauth.oauth.crowd;
 
-import com.atlassian.crowd.model.user.User;
-import com.atlassian.crowd.service.client.CrowdClient;
-import com.gaoyong.springsecurityoauth.oauth.weibo.api.vo.WeiboToken;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.gaoyong.springsecurityoauth.oauth.weibo.api.WeiboClient.CLIENT;
 
 /**
  * @author 高勇01
@@ -32,6 +22,7 @@ public class CrowdAuthenticationFilter extends AbstractAuthenticationProcessingF
     // @Autowired
     // private CrowdUserDetailsService crowdUserDetailsService;
     
+    
     public CrowdAuthenticationFilter(String filterProcessesUrl) {
         super(new AntPathRequestMatcher(filterProcessesUrl, "GET"));
     }
@@ -39,6 +30,7 @@ public class CrowdAuthenticationFilter extends AbstractAuthenticationProcessingF
     
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+        crowdSession();
         String username = request.getParameter("username");
         String password = request.getParameter("password");
         // AbstractAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
@@ -47,14 +39,37 @@ public class CrowdAuthenticationFilter extends AbstractAuthenticationProcessingF
             public Object getCredentials() {
                 return password;
             }
-
+        
             @Override
             public Object getPrincipal() {
                 return username;
             }
         };
+        CrowdAuthenticationDetailsSource crowdWebAuthenticationDetailsSource = new CrowdAuthenticationDetailsSource();
+        this.setAuthenticationDetailsSource(crowdWebAuthenticationDetailsSource);
         authenticationToken.setDetails(authenticationDetailsSource.buildDetails(request));
         return this.getAuthenticationManager().authenticate(authenticationToken);
+        
         // return authenticationToken;
+    }
+    
+    public void crowdSession() {
+        ServletContext servletContext = this.getServletContext();
+        WebApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(servletContext);
+        log.info("ctx:{}", ctx);
+        // httpAuthenticator = (HttpAuthenticator) ctx.getBean("httpAuthenticator");
+        // try {
+        //
+        //     this.authenticated = this.httpAuthenticator.isAuthenticated(request, response);
+        // } catch (RemoteException e) {
+        //     e.printStackTrace();
+        // } catch (InvalidAuthorizationTokenException e) {
+        //     e.printStackTrace();
+        // } catch (ApplicationAccessDeniedException e) {
+        //
+        //     e.printStackTrace();
+        // }
+        //
+        // return this.authenticated;
     }
 }

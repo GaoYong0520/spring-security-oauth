@@ -3,6 +3,7 @@ package com.gaoyong.springsecurityoauth.oauth.crowd;
 import com.atlassian.crowd.model.user.User;
 import com.atlassian.crowd.service.client.CrowdClient;
 import lombok.Data;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.GrantedAuthority;
@@ -38,6 +39,8 @@ public class CrowdUserDetailsService {
         public CrowdUserDetails(String username) {
             this.username = username;
         }
+        
+        private String crowdToken;
     
         public CrowdUserDetails(User user) {
             String name = user.getName();
