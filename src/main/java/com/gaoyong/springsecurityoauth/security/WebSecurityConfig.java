@@ -1,6 +1,7 @@
 package com.gaoyong.springsecurityoauth.security;
 
 import com.gaoyong.springsecurityoauth.oauth.crowd.CrowdAuthenticationFilter;
+import com.gaoyong.springsecurityoauth.oauth.crowd.CrowdAuthenticationFilter;
 import com.gaoyong.springsecurityoauth.oauth.crowd.CrowdUserDetailsService;
 import com.gaoyong.springsecurityoauth.oauth.crowd.RemoteCrowdAuthenticationProvider;
 import com.gaoyong.springsecurityoauth.oauth.weibo.CrowdAuthenticationSuccessHandler;
@@ -21,6 +22,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -36,19 +40,22 @@ import java.util.List;
 @EnableWebSecurity //启用Spring Security.
 ////会拦截注解了@PreAuthrize注解的配置.
 @EnableGlobalMethodSecurity(prePostEnabled=true)
-@ImportResource(value = "classpath:applicationContext-CrowdRestClient.xml")
+// @ImportResource(value = "classpath:applicationContext-CrowdRestClient.xml")
 // @ComponentScan("")
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
     @Value("${weibo.oauth2:/oauth2/weibo}")
     private String oauthUrl;
-    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     @Autowired
     private AuthenticationManager authenticationManager;
     
+
+    
     @Autowired
     private WeiboAuthenticationProvider weiboAuthenticationProvider;
-    @Autowired
-    private RemoteCrowdAuthenticationProvider crowdAuthenticationProvider;
+    // @Autowired
+    // private RemoteCrowdAuthenticationProvider crowdAuthenticationProvider;
     
     @Autowired
     private AuthenticationSuccessHandler weiboAuthenticationSuccessHandler;
@@ -56,14 +63,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
     @Autowired
     private AuthenticationFailureHandler weiboAuthenticationFailureHandler;
     
-    @Autowired
-    private CrowdAuthenticationSuccessHandler crowdAuthenticationSuccessHandler;
+    // @Autowired
+    // private CrowdAuthenticationSuccessHandler crowdAuthenticationSuccessHandler;
     
     // @Autowired
     // private CrowdUserDetailsService crowdUserDetailsServiceImpl;
     
-    @Autowired
-    private AuthenticationManagerBuilder authenticationManagerBuilder;
+    // @Autowired
+    // private AuthenticationManagerBuilder authenticationManagerBuilder;
     
     
     // @Autowired
@@ -74,7 +81,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .formLogin().loginProcessingUrl("/login")
+                .formLogin()
+                .loginPage("/login")
+                .loginProcessingUrl(oauthUrl)
                 .and()
                 .authorizeRequests()
                 .antMatchers( "/login", "/resources/**", "/static/**").permitAll()
@@ -86,13 +95,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
                 .csrf().disable();
     
         // 添加自定义Filter
-         http.addFilterAfter(weiboAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
-                 .authorizeRequests().antMatchers(oauthUrl).permitAll();
+        //  http.addFilterAfter(weiboAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+        //          .authorizeRequests().antMatchers(oauthUrl).permitAll();
                  // .and().authenticationProvider(new WeiboAuthenticationProvider());
-        http.addFilterAfter(crowdAuthenticationFilter(), WeiboAuthenticationFilter.class)
-                .authorizeRequests().antMatchers("/oauth2/crowd").permitAll()
-                .and()
-                .authorizeRequests().anyRequest().authenticated();
+        // http.addFilterAfter(crowdAuthenticationFilter(), WeiboAuthenticationFilter.class)
+        //         .authorizeRequests().antMatchers("/oauth2/crowd").permitAll()
+        //         .and()
+        //         .authorizeRequests().anyRequest().authenticated();
     }
     
     
@@ -111,23 +120,23 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
         return filter;
     }
     
-    @Bean
-    public CrowdAuthenticationFilter crowdAuthenticationFilter() {
-        // 自定义认证filter，需要实现CustomAuthenticationProcessingFilter和CustomerAuthenticationProvider
-        // filter将过滤url并把认证信息塞入authentication作为CustomerAuthenticationProvider.authenticate的入参
-        CrowdAuthenticationFilter filter = new CrowdAuthenticationFilter("/oauth2/crowd");
-        
-        // 默认自定义认证方式grant_type为authorization_code方式，如果直接返回内容，则需自定义success和fail handler
-        // filter.setAuthenticationSuccessHandler(new CustomAuthenticationSuccessHandler());
-        // ProviderManager providerManager = new ProviderManager(Collections.singletonList(weiboAuthenticationProvider));
-        filter.setAuthenticationFailureHandler(weiboAuthenticationFailureHandler);
-        filter.setAuthenticationSuccessHandler(crowdAuthenticationSuccessHandler);
-        List<AuthenticationProvider> providers = Collections.singletonList(crowdAuthenticationProvider);
-        ProviderManager mapper = new ProviderManager(providers);
-        filter.setAuthenticationManager(mapper);
-        return filter;
-    }
-    
+    // // @Bean
+    // public CrowdAuthenticationFilter crowdAuthenticationFilter() {
+    //     // 自定义认证filter，需要实现CustomAuthenticationProcessingFilter和CustomerAuthenticationProvider
+    //     // filter将过滤url并把认证信息塞入authentication作为CustomerAuthenticationProvider.authenticate的入参
+    //     CrowdAuthenticationFilter filter = new CrowdAuthenticationFilter("/oauth2/crowd");
+    //
+    //     // 默认自定义认证方式grant_type为authorization_code方式，如果直接返回内容，则需自定义success和fail handler
+    //     // filter.setAuthenticationSuccessHandler(new CustomAuthenticationSuccessHandler());
+    //     // ProviderManager providerManager = new ProviderManager(Collections.singletonList(weiboAuthenticationProvider));
+    //     filter.setAuthenticationFailureHandler(weiboAuthenticationFailureHandler);
+    //     filter.setAuthenticationSuccessHandler(crowdAuthenticationSuccessHandler);
+    //     List<AuthenticationProvider> providers = Collections.singletonList(crowdAuthenticationProvider);
+    //     ProviderManager mapper = new ProviderManager(providers);
+    //     filter.setAuthenticationManager(mapper);
+    //     return filter;
+    // }
+    //
     // @Override
     // public void configure(AuthenticationManagerBuilder auth) {
     //     // 定义认证的provider用于实现用户名和密码认证
@@ -145,5 +154,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
         return super.authenticationManagerBean();
     }
     
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.inMemoryAuthentication().passwordEncoder(new BCryptPasswordEncoder())
+                .withUser("simm").password ("123").roles("USER").and()
+                .withUser("admin").password(passwordEncoder.encode("ct123!@#")).roles("USER","ADMIN");
+
+        auth.authenticationProvider(weiboAuthenticationProvider);
+    }
     
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
 }
