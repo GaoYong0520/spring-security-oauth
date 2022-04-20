@@ -21,18 +21,18 @@ import java.util.Set;
  * @author 高勇01
  * @date 2021/7/9 14:02
  */
-@Component
+// @Component
 public class RemoteCrowdAuthenticationProvider implements AuthenticationProvider {
     @Autowired
     private CrowdHttpAuthenticator crowdHttpAuthenticator;
-    
+
     @Autowired
     private CrowdUserDetailsService crowdUserDetailsService;
     // @Override
     // protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
     //
     // }
-    
+
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String principal = (String) authentication.getPrincipal();
@@ -48,12 +48,12 @@ public class RemoteCrowdAuthenticationProvider implements AuthenticationProvider
         }
         Set<SimpleGrantedAuthority> authorities = Collections.singleton(new SimpleGrantedAuthority("CROWD_USER"));
         AbstractAuthenticationToken result = new AbstractAuthenticationToken(authorities) {
-    
+
             @Override
             public Object getCredentials() {
                 return authentication.getCredentials();
             }
-    
+
             @Override
             public Object getPrincipal() {
                 return authentication.getPrincipal();
@@ -63,8 +63,8 @@ public class RemoteCrowdAuthenticationProvider implements AuthenticationProvider
         result.setAuthenticated(true);
         return result;
     }
-    
-    
+
+
     protected UserDetails retrieveUser(HttpServletRequest request) throws AuthenticationException {
         try {
             String crowdToken = crowdHttpAuthenticator.getToken(request);
@@ -80,9 +80,9 @@ public class RemoteCrowdAuthenticationProvider implements AuthenticationProvider
             throw new AuthenticationServiceException(e.getMessage());
         }
     }
-    
-    
-    
+
+
+
     @Override
     public boolean supports(Class<?> authentication) {
         return (AbstractAuthenticationToken.class.isAssignableFrom(authentication));
